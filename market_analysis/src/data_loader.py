@@ -1,27 +1,33 @@
 import pandas as pd
 import streamlit as st
+import os
 
 @st.cache_data
 def load_data():
     """
     Loads and preprocesses the Kaggle Supermarket Sales dataset.
-    Cached by Streamlit to prevent reloading on every UI interaction.
+    Includes smart pathing to handle nested GitHub repositories.
     """
-    try:
-        # Load the standard Kaggle Supermarket Sales dataset
-        df = pd.read_csv("market_analysis/data/supermarket_sales.csv")
+    # Check for the file in multiple possible locations
+    file_path = "data/supermarket_sales.csv"
+    if not os.path.exists(file_path):
+        file_path = "market_analysis/data/supermarket_sales.csv"
         
-        # Standardize column names for easier coding
-        df.columns = df.columns.str.lower().str.replace(' ', '_')
+    try:
+        df = pd.read_csv(file_path)
+        
+        # Strip whitespace before lowering and replacing spaces to prevent KeyErrors
+        df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
         
         # Convert Date column to datetime
         df['date'] = pd.to_datetime(df['date'])
         
         # Extract useful time features
-        df['hour'] = pd.to_datetime(df['time']).dt.hour
+        if 'time' in df.columns:
+            df['hour'] = pd.to_datetime(df['time']).dt.hour
         df['day_of_week'] = df['date'].dt.day_name()
         
         return df
     except FileNotFoundError:
-        st.error("Data file not found. Please ensure 'supermarket_sales.csv' is in the 'data/' folder.")
+        st.error(f"Data file not found. Checked for '{file_path}'. Please ensure your dataset is uploaded to GitHub.")
         st.stop()
