@@ -13,7 +13,11 @@ Categories with high *Lift* are strong anchors that drive cross-selling and dese
 df = load_data()
 
 with st.spinner("Calculating association rules..."):
-    rules = get_basket_rules(df)
+    try:
+        rules = get_basket_rules(df)
+    except KeyError as e:
+        st.error(f"Data error: {e}")
+        st.stop()
 
 if rules.empty:
     st.warning("No strong association rules found in the current dataset.")
