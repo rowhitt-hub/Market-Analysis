@@ -9,7 +9,7 @@ def load_data():
     """
     try:
         # Load the standard Kaggle Supermarket Sales dataset
-        df = pd.read_csv("data/supermarket_sales.csv")
+        df = pd.read_csv("market_analysis/data/supermarket_sales.csv")
         
         # Standardize column names for easier coding
         df.columns = df.columns.str.lower().str.replace(' ', '_')
