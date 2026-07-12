@@ -7,7 +7,12 @@ st.set_page_config(page_title="Strategic Recommendations", page_icon="🎯")
 st.title("🎯 Shelf Space Optimization Matrix")
 
 df = load_data()
-profit_df = get_profitability(df)
+
+try:
+    profit_df = get_profitability(df)
+except KeyError as e:
+    st.error(f"Data error: {e}")
+    st.stop()
 
 # Calculate a proxy for "Shelf Allocation" (we assume current allocation correlates to inventory quantity)
 shelf_proxy = df.groupby('product_line')['quantity'].sum().reset_index()
