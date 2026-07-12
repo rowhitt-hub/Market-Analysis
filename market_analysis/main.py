@@ -17,17 +17,17 @@ df = load_data()
 st.header("Executive Summary")
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric("Total Revenue", f"${df['total'].sum():,.2f}")
+col1.metric("Total Revenue", f"${df['sales'].sum():,.2f}")
 col2.metric("Total Transactions", f"{len(df):,}")
-col3.metric("Top Category (Revenue)", df.groupby('product_line')['total'].sum().idxmax())
+col3.metric("Top Category (Revenue)", df.groupby('product_line')['sales'].sum().idxmax())
 col4.metric("Avg Basket Size", f"{df['quantity'].mean():.1f} items")
 
 st.divider()
 
 # High-level Revenue Trend
 st.subheader("Revenue Timeline")
-daily_sales = df.groupby('date')['total'].sum().reset_index()
-fig = px.line(daily_sales, x='date', y='total', title="Daily Revenue Trend")
+daily_sales = df.groupby('date')['sales'].sum().reset_index()
+fig = px.line(daily_sales, x='date', y='sales', title="Daily Revenue Trend")
 st.plotly_chart(fig, use_container_width=True)
 
 st.info("👈 **Use the sidebar to navigate through specific analyses.**")
