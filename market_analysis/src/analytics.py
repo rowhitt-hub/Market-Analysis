@@ -1,10 +1,17 @@
 import pandas as pd
 from mlxtend.frequent_patterns import apriori, association_rules
+import streamlit as st
 
 def get_profitability(df):
     """Calculates gross margin and total revenue per category."""
+    # Defensive check to ensure columns exist before aggregating
+    req_cols = ['product_line', 'sales', 'gross_income', 'gross_margin_percentage', 'invoice_id']
+    missing = [c for c in req_cols if c not in df.columns]
+    if missing:
+        raise KeyError(f"Missing required columns in dataset: {missing}. Available columns: {list(df.columns)}")
+
     profit = df.groupby('product_line').agg(
-        total_revenue=('total', 'sum'),
+        total_revenue=('sales', 'sum'),
         total_profit=('gross_income', 'sum'),
         avg_margin=('gross_margin_percentage', 'mean'),
         transactions=('invoice_id', 'count')
@@ -12,12 +19,8 @@ def get_profitability(df):
     return profit
 
 def get_basket_rules(df, min_support=0.01):
-    """
-    Performs Market Basket Analysis.
-    Since the standard Kaggle dataset doesn't have true multi-item baskets per invoice,
-    we simulate basket behavior by grouping by Customer Type and Date to find patterns.
-    """
-    # Create a simulated basket (Items bought on the same day by the same gender/customer type in the same branch)
+    """Performs Market Basket Analysis."""
+    # Create a simulated basket
     df['basket_id'] = df['branch'] + "_" + df['date'].astype(str) + "_" + df['customer_type']
     
     # Pivot data into a one-hot encoded matrix
@@ -25,8 +28,8 @@ def get_basket_rules(df, min_support=0.01):
               .sum().unstack().reset_index().fillna(0)
               .set_index('basket_id'))
     
-    # Convert quantities to boolean (1 if bought, 0 otherwise)
-    basket_sets = basket.applymap(lambda x: 1 if x > 0 else 0)
+    # Resolves AttributeError in pandas>=2.1.0
+    basket_sets = basket.map(lambda x: 1 if x > 0 else 0)
     
     # Apply Apriori
     frequent_itemsets = apriori(basket_sets, min_support=min_support, use_colnames=True)
